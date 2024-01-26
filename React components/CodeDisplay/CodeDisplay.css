@@ -1,0 +1,28 @@
+.code-block {
+    position: relative;
+    background: #272822; /* 暗色背景 */
+    border-radius: 4px;
+    margin: 10px 0;
+  }
+  
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1e1e1e;
+    color: white;
+    padding: 10px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+  }
+  
+  .copy-button {
+    cursor: pointer;
+    background: #f5f5f5;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.9em;
+  }
+  
