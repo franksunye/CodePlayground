@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Display with YML</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <style>
+        /* 自定义样式 */
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 10px;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+        .code-block {
+            position: relative;
+            background: #272822; /* 暗色背景 */
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .copy-button {
+            cursor: pointer;
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 5px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px; /* 用于在图标和文本之间创建空间 */
+        }
+        .icon {
+            display: inline-block;
+        }
+        .copied-indicator {
+            display: none;
+            color: green;
+        }
+        pre[class*="language-"] {
+            padding: 20px;
+            border-radius: 4px;
+            overflow: auto;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="code-block">
+    <div class="code-header">
+        <span>YML</span>
+        <button class="copy-button">
+            <span class="icon">&#128196;</span> <!-- 文档图标 -->
+            <span class="button-text">Copy code</span>
+        </button>
+    </div>
+    <pre><code class="language-yaml">
+# Example YML content
+name: Example
+path: "/example/path"
+dependencies:
+  - name: Dependency1
+  - name: Dependency2
+    </code></pre>
+</div>
+
+<!-- 先引入 Prism.js 主脚本 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+<!-- 然后引入 YML 语言支持 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-yaml.min.js"></script>
+
+<script>
+    document.querySelector('.copy-button').addEventListener('click', function() {
+        const code = this.parentElement.nextElementSibling.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            this.querySelector('.button-text').textContent = 'Copied!';
+            this.querySelector('.icon').innerHTML = '&#10004;'; // 对勾图标
+            setTimeout(() => {
+                this.querySelector('.button-text').textContent = 'Copy code';
+                this.querySelector('.icon').innerHTML = '&#128196;'; // 文档图标
+            }, 3000);
+        });
+    });
+</script>
+
+</body>
+</html>
