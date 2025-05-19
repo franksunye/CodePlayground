@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>卫生间高保真3D模型</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf2f2f2);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(3, 3, 5);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.1;
+    controls.target.set(1.5, 1, 1.5);
+
+    const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+    light.position.set(0, 20, 0);
+    scene.add(light);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    dirLight.position.set(5, 10, 7.5);
+    scene.add(dirLight);
+
+    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xe0e0e0 });
+    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0xb0b0b0 });
+    const whiteMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const grayMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+
+    // 地板
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 3), floorMaterial);
+    floor.position.set(1.5, 0.05, 1.5); // 对齐两个墙面底部
+    scene.add(floor);
+
+    // 背面墙
+    const wall1 = new THREE.Mesh(new THREE.BoxGeometry(3, 2.5, 0.1), wallMaterial);
+    wall1.position.set(1.5, 1.3, 0); // 与地板 Z 对齐
+    scene.add(wall1);
+
+    // 侧面墙
+    const wall2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.5, 3), wallMaterial);
+    wall2.position.set(0, 1.3, 1.5); // 与地板 X 对齐
+    scene.add(wall2);
+
+    // 马桶
+    const toiletBase = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.22, 0.42, 32), whiteMaterial);
+    toiletBase.position.set(2.2, 0.21, 0.5);
+    toiletBase.scale.set(1.1, 1, 1.8); // x轴缩放1.5倍形成椭圆
+    scene.add(toiletBase);
+
+    const toiletTank = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.42, 0.16), whiteMaterial);
+    toiletTank.position.set(2.2, 0.61, 0.15);
+    scene.add(toiletTank);
+
+    // 洗手盆
+    const sinkStand = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.85, 32), whiteMaterial);
+    sinkStand.position.set(0.5, 0.425, 2.0);
+    scene.add(sinkStand);
+
+    const sinkBowl = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, side: THREE.DoubleSide }));
+    sinkBowl.position.set(0.5, 0.85 + 0.15, 2.0); // 0.2 是盆体的半径
+    sinkBowl.rotation.set(Math.PI, Math.PI / 2, 0);
+    sinkBowl.scale.set(2.8, 1, 1.5);
+    scene.add(sinkBowl);
+
+    // 地漏嵌入地面
+    const drainHeight = 0.1;
+    const drain = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.12, 0.05, drainHeight, 32),
+        grayMaterial
+    );
+    // 让地漏有一半嵌入地板
+    drain.position.set(1.5, 0.10 - drainHeight / 2, 1.5);
+    scene.add(drain);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
