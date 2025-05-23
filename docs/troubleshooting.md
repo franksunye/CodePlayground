@@ -1,244 +1,96 @@
-# 故障排除与优化指南
+# 开发指南与故障排除
 
-本文档记录了项目中常见问题的解决方案和性能优化措施。
+## 🚀 **快速启动**
 
-## 常见错误及修复
-
-### 导入错误
-
-**问题**：缺少必要的函数导出
-```
-Attempted import error: 'getMessageCountByUserId' is not exported from '@/lib/db/queries'
+```bash
+cd ai-chatbot
+pnpm install
+pnpm dev
 ```
 
-**解决方案**：在`lib/db/mock-db.ts`中添加缺失的函数实现
-```typescript
-export async function getMessageCountByUserId({
-  id,
-  differenceInHours,
-}: {
-  id: string;
-  differenceInHours: number;
-}) {
-  try {
-    // 返回模拟数据
-    return 5;
-  } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to get message count',
-    );
-  }
-}
-```
+访问 http://localhost:3000
 
-### API路由错误
+## 🔧 **开发环境配置**
 
-**问题**：路由处理程序未返回响应
-```
-Error: No response is returned from route handler 'route.ts'
-```
-
-**解决方案**：确保所有错误处理分支都返回响应
-```typescript
-} catch (error) {
-  if (error instanceof ChatSDKError) {
-    return error.toResponse();
-  }
-  // 处理其他错误
-  console.error('Unexpected error in chat API:', error);
-  return new ChatSDKError('internal_server_error:chat').toResponse();
-}
-```
-
-### 错误类型缺失
-
-**问题**：使用了未定义的错误类型
-
-**解决方案**：在`lib/errors.ts`中添加新的错误类型
-```typescript
-export type ErrorType =
-  | 'bad_request'
-  | 'unauthorized'
-  | 'forbidden'
-  | 'not_found'
-  | 'rate_limit'
-  | 'offline'
-  | 'internal_server_error'; // 新增
-
-// 在getStatusCodeByType函数中添加对应处理
-case 'internal_server_error':
-  return 500;
-```
-
-## 启动速度优化
-
-### 问题分析
-
-1. **Vercel OTel 遥测初始化**：增加启动时间约2-3秒
-2. **Redis连接尝试**：连接超时导致启动延迟约5-10秒
-3. **Vercel函数依赖**：增加启动时间约1-2秒
-4. **字体预加载**：增加启动时间约1秒
-
-### 优化措施
-
-#### 1. 条件性禁用Vercel遥测
-
-**文件**: `instrumentation.ts`
-```typescript
-import { registerOTel } from '@vercel/otel';
-import { isMockMode } from '@/lib/constants';
-
-export function register() {
-  // 在mock模式下跳过遥测初始化
-  if (!isMockMode) {
-    registerOTel({ serviceName: 'ai-chatbot' });
-  }
-}
-```
-
-#### 2. 优化Redis连接
-
-**文件**: `app/(chat)/api/chat/route.ts`
-```typescript
-function getStreamContext() {
-  // 在mock模式下跳过可恢复流
-  if (isMockMode) {
-    return null;
-  }
-  // ... 原有逻辑
-}
-```
-
-#### 3. 模拟地理位置服务
-
-**文件**: `app/(chat)/api/chat/route.ts`
-```typescript
-// 在mock模式下使用模拟地理位置数据
-const geoData = isMockMode
-  ? { longitude: null, latitude: null, city: null, country: null }
-  : geolocation(request);
-```
-
-#### 4. 禁用字体预加载
-
-**文件**: `app/layout.tsx`
-```typescript
-const geist = Geist({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-geist',
-  preload: false, // 禁用预加载以提高启动速度
-});
-```
-
-### 环境变量配置
-
-确保在`.env`文件中设置：
+### 环境变量
 ```env
+# .env.local
 MOCK_MODE=true
 NODE_ENV=development
 ```
 
-### 优化效果
+### 性能优化
+项目已优化启动速度：
+- **优化前**: 30-45秒
+- **优化后**: 10-15秒
+- **主要优化**: 跳过外部服务连接、禁用遥测、模拟数据服务
 
-- **优化前**：启动时间约30-45秒
-- **优化后**：启动时间约10-15秒
-- **改进**：减少约20-30秒启动时间
+## 🧪 **测试功能**
 
-## 性能监控
-
-### 使用时间戳监控
-
-```typescript
-console.time('App Startup');
-// ... 初始化代码
-console.timeEnd('App Startup');
-```
-
-### 检查端口占用
-
-```powershell
-Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue
-```
-
-### 浏览器访问测试
-
-直接访问 `http://localhost:3000` 验证服务是否正常启动。
-
-## 经验总结
-
-### 1. Mock实现的重要性
-在隔离外部依赖时，必须确保所有被引用的函数都有对应的mock实现，否则会导致编译错误。
-
-### 2. 错误处理的完整性
-API路由中的错误处理必须覆盖所有可能的代码路径，确保每个分支都返回有效的响应。
-
-### 3. 类型定义的一致性
-使用自定义错误类型时，必须确保类型定义和实现保持一致。
-
-### 4. 构建缓存的影响
-在进行大量代码修改后，清理构建缓存可以避免一些奇怪的编译问题。
-
-## 数据分析组件相关问题
-
-### 图表渲染问题
-
-**问题**：Recharts图表不显示或显示异常
-```
-Warning: Failed to create chart
-```
-
-**解决方案**：
-1. 确保数据格式正确
-```typescript
-// 正确的数据格式
-const chartData = [
-  { country: 'United States', unicorn_count: 673 },
-  { country: 'China', unicorn_count: 164 }
-];
-```
-
-2. 检查ChartConfig配置
-```typescript
-const chartConfig = {
-  type: 'bar' as const,
-  xKey: 'country',
-  yKeys: ['unicorn_count'],
-  title: 'Chart Title'
-};
-```
-
-### 组件导入错误
-
-**问题**：数据分析组件导入失败
-```
-Module not found: Can't resolve '@/components/data-analysis'
-```
-
-**解决方案**：确保组件路径正确
-```typescript
-// 正确的导入方式
-import { DataAnalysisSuggestedQueries } from '@/components/data-analysis';
-// 或
-import { DataAnalysisSuggestedQueries } from '@/components/data-analysis/suggested-queries';
-```
-
-### 依赖缺失问题
-
-**问题**：缺少recharts或相关依赖
-```
-Module not found: Can't resolve 'recharts'
-```
-
-**解决方案**：安装必要依赖
+### 支持的查询
 ```bash
-pnpm add recharts @radix-ui/react-tabs
+# 数据分析查询
+"Compare unicorn valuations in the US vs China"
+"Which countries have the highest unicorn density?"
+"Show me the top countries with most unicorn companies"
+
+# 其他功能
+"Help me write an essay about silicon valley"
+"Write code to demonstrate djikstra's algorithm"
 ```
 
-## 后续优化方向
+## ⚠️ **常见问题**
 
-1. **懒加载组件**：对图表组件实现懒加载
-2. **缓存优化**：实现数据查询结果缓存
-3. **代码分割**：按功能模块分割数据分析代码
-4. **图表性能优化**：大数据集的图表渲染优化
+### 1. "Unknown test prompt!" 错误
+**原因**: 查询不在预定义的测试提示列表中
+**解决**: 使用上述支持的查询示例
+
+### 2. 数据持久化问题
+**原因**: 热重载导致内存数据丢失
+**解决**: 已实现文件持久化，数据保存在 `.mock-db/documents.json`
+
+### 3. 图表不显示
+**原因**: 数据格式或配置问题
+**解决**: 检查浏览器控制台错误信息
+
+### 4. 启动缓慢
+**原因**: 外部服务连接超时
+**解决**: 确保 `MOCK_MODE=true` 环境变量设置正确
+
+## 🔧 **开发技巧**
+
+### 调试模式
+```typescript
+// 在浏览器控制台查看详细日志
+localStorage.setItem('debug', 'true');
+```
+
+### 清理缓存
+```bash
+# 清理 Next.js 缓存
+rm -rf .next
+pnpm dev
+```
+
+### 检查服务状态
+```bash
+# 检查端口占用
+netstat -an | findstr :3000
+```
+
+## 🚀 **扩展开发**
+
+### 添加新的查询类型
+1. 在 `lib/data-analysis/intent-recognition.ts` 添加新模式
+2. 在 `tests/prompts/basic.ts` 添加测试提示
+3. 在 `tests/prompts/utils.ts` 添加响应逻辑
+
+### 添加新的图表类型
+1. 在 `components/data-analysis/dynamic-chart.tsx` 添加新组件
+2. 更新图表配置类型定义
+3. 测试新图表的渲染效果
+
+### 集成真实 AI
+1. 替换 `tests/prompts/utils.ts` 中的模拟逻辑
+2. 配置真实的 AI 模型 API
+3. 更新环境变量配置
