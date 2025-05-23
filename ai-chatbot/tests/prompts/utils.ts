@@ -65,6 +65,9 @@ export const getResponseChunksByPrompt = (
     throw new Error('No recent message found!');
   }
 
+  // Debug: Log the recent message for troubleshooting
+  console.log('🔍 Recent message:', JSON.stringify(recentMessage, null, 2));
+
   if (isReasoningEnabled) {
     if (compareMessages(recentMessage, TEST_PROMPTS.USER_SKY)) {
       return [
@@ -154,8 +157,27 @@ export const getResponseChunksByPrompt = (
         toolName: 'createDocument',
         toolCallType: 'function',
         args: JSON.stringify({
-          title: 'Essay about Silicon Valley',
+          title: 'Help me write an essay about silicon valley',
           kind: 'text',
+        }),
+      },
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_CODE_ARTIFACT)) {
+    return [
+      {
+        type: 'tool-call',
+        toolCallId: 'call_124',
+        toolName: 'createDocument',
+        toolCallType: 'function',
+        args: JSON.stringify({
+          title: 'Write code to demonstrate djikstra\'s algorithm',
+          kind: 'code',
         }),
       },
       {
@@ -196,16 +218,68 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
       },
     ];
   } else if (
+    compareMessages(recentMessage, TEST_PROMPTS.CREATE_DOCUMENT_CODE_CALL)
+  ) {
+    return [
+      ...textToDeltas(`# Dijkstra's Algorithm Implementation
+
+def dijkstra(graph, start):
+    distances = {node: float('inf') for node in graph}
+    distances[start] = 0
+    current_node = start
+
+    while current_node:
+        current_distance = distances[current_node]
+
+        for neighbor, weight in graph[current_node].items():
+            distance = current_distance + weight
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+
+        return distances
+
+# Example usage
+graph = {
+    'A': {'B': 1, 'C': 4},
+    'B': {'A': 1, 'C': 2, 'D': 5},
+    'C': {'A': 4, 'B': 2, 'D': 1},
+    'D': {'B': 5, 'C': 1}
+}
+
+print(dijkstra(graph, 'A'))`),
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (
     compareMessages(recentMessage, TEST_PROMPTS.CREATE_DOCUMENT_TEXT_RESULT)
   ) {
     return [
       {
         type: 'text-delta',
-        textDelta: 'A document was created and is now visible to the user.',
+        textDelta: 'I\'ve created an essay about Silicon Valley for you. You can see it in the document editor on the right.',
       },
       {
         type: 'finish',
-        finishReason: 'tool-calls',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (
+    compareMessages(recentMessage, TEST_PROMPTS.CREATE_DOCUMENT_CODE_RESULT)
+  ) {
+    return [
+      {
+        type: 'text-delta',
+        textDelta: 'I\'ve created a Python implementation of Dijkstra\'s algorithm for you. You can see the code in the editor on the right.',
+      },
+      {
+        type: 'finish',
+        finishReason: 'stop',
         logprobs: undefined,
         usage: { completionTokens: 10, promptTokens: 3 },
       },
@@ -229,6 +303,90 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
   } else if (compareMessages(recentMessage, TEST_PROMPTS.GET_WEATHER_RESULT)) {
     return [
       ...textToDeltas('The current temperature in San Francisco is 17°C.'),
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_DATA_ANALYSIS)) {
+    return [
+      {
+        type: 'tool-call',
+        toolCallId: 'call_789',
+        toolName: 'createDataAnalysis',
+        toolCallType: 'function',
+        args: JSON.stringify({
+          title: 'Compare unicorn valuations in the US vs China',
+        }),
+      },
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (compareMessages(recentMessage, TEST_PROMPTS.CREATE_DATA_ANALYSIS_RESULT)) {
+    return [
+      ...textToDeltas('I\'ve created a data analysis comparing unicorn valuations in the US vs China. You can see the interactive charts and data visualization on the right.'),
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_UNICORN_DENSITY)) {
+    return [
+      {
+        type: 'tool-call',
+        toolCallId: 'call_890',
+        toolName: 'createDataAnalysis',
+        toolCallType: 'function',
+        args: JSON.stringify({
+          title: 'Which countries have the highest unicorn density?',
+        }),
+      },
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (compareMessages(recentMessage, TEST_PROMPTS.CREATE_UNICORN_DENSITY_RESULT)) {
+    return [
+      ...textToDeltas('I\'ve created a data analysis showing countries with the highest unicorn density. You can see the interactive charts and data visualization on the right.'),
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (compareMessages(recentMessage, TEST_PROMPTS.USER_TOP_COUNTRIES)) {
+    return [
+      {
+        type: 'tool-call',
+        toolCallId: 'call_891',
+        toolName: 'createDataAnalysis',
+        toolCallType: 'function',
+        args: JSON.stringify({
+          title: 'Show me the top countries with most unicorn companies',
+        }),
+      },
+      {
+        type: 'finish',
+        finishReason: 'stop',
+        logprobs: undefined,
+        usage: { completionTokens: 10, promptTokens: 3 },
+      },
+    ];
+  } else if (compareMessages(recentMessage, TEST_PROMPTS.CREATE_TOP_COUNTRIES_RESULT)) {
+    return [
+      ...textToDeltas('I\'ve created a data analysis showing the top countries with most unicorn companies. You can see the interactive charts and data visualization on the right.'),
       {
         type: 'finish',
         finishReason: 'stop',

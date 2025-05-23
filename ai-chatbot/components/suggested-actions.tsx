@@ -19,9 +19,9 @@ function PureSuggestedActions({
 }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'Compare unicorn valuations',
+      label: 'in the US vs China',
+      action: 'Compare unicorn valuations in the US vs China',
     },
     {
       title: 'Write code to',
@@ -30,13 +30,13 @@ function PureSuggestedActions({
     },
     {
       title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      label: 'about silicon valley',
+      action: 'Help me write an essay about silicon valley',
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'Which countries have',
+      label: 'the highest unicorn density?',
+      action: 'Which countries have the highest unicorn density?',
     },
   ];
 

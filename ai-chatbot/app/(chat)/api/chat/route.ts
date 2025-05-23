@@ -23,6 +23,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { createDataAnalysis } from '@/lib/ai/tools/create-data-analysis';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
@@ -150,6 +151,15 @@ export async function POST(request: Request) {
       ],
     });
 
+    const messageText = message.parts[0]?.text || 'No text content';
+    console.log('🔍 Processing message:', messageText);
+    console.log('🛠️ Available tools:', ['getWeather', 'createDocument', 'updateDocument', 'requestSuggestions', 'createDataAnalysis']);
+
+    // Check if this looks like a data analysis query
+    const dataKeywords = ['unicorn', 'compare', 'show', 'display', 'top', 'highest', 'most', 'countries', 'industries', 'valuations'];
+    const hasDataKeywords = dataKeywords.some(keyword => messageText.toLowerCase().includes(keyword));
+    console.log('🔍 Data analysis keywords detected:', hasDataKeywords, 'Keywords found:', dataKeywords.filter(k => messageText.toLowerCase().includes(k)));
+
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
@@ -168,6 +178,7 @@ export async function POST(request: Request) {
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
+                  'createDataAnalysis',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
@@ -179,6 +190,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            createDataAnalysis: createDataAnalysis({ session, dataStream }),
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {

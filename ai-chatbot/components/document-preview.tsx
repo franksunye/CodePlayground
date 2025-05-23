@@ -21,6 +21,7 @@ import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
 import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
+import { DataAnalysisPreview } from './data-analysis-preview';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -279,6 +280,12 @@ const DocumentContent = ({ document }: { document: Document }) => {
           status={artifact.status}
           isInline={true}
         />
+      ) : document.kind === 'data' ? (
+        <div className="flex flex-1 relative size-full p-4">
+          <div className="absolute inset-0">
+            <DataAnalysisPreview {...commonProps} />
+          </div>
+        </div>
       ) : null}
     </div>
   );

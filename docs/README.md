@@ -8,27 +8,32 @@
 
 - 现代聊天界面与流式响应
 - 自然语言意图识别
-- 交互式图表卡片
-- 图表类型切换和详细视图
+- 交互式图表卡片 (Table/Chart切换)
+- 建议查询按钮
 - 模拟数据服务（无需后端）
 
 ## 技术栈
 
-- **框架**: Next.js 14 + TypeScript
+- **框架**: Next.js 15 + TypeScript
 - **UI**: Tailwind CSS + Shadcn UI
 - **图表**: Recharts
-- **AI**: Vercel AI SDK
+- **动画**: Framer Motion
 
 ## 项目状态
 
-✅ **已完成**
+✅ **冲刺1完成** (UI基础)
 - 项目基础设置和环境配置
-- 功能隔离和启动优化
-- 聊天界面基础功能
+- 聊天界面基础功能正常运行
 
-🚧 **进行中**
-- 数据分析意图识别
-- 图表消息组件开发
+✅ **冲刺2阶段1完成** (数据分析组件)
+- 数据分析组件库创建完成
+- 建议查询、动态图表、SQL显示、结果展示组件
+- UI组件集成 (chart, table, tabs)
+
+🚧 **冲刺2阶段2进行中** (数据服务)
+- 模拟数据服务开发
+- 意图识别服务
+- 聊天界面集成
 
 ## 快速开始
 
@@ -40,10 +45,18 @@ pnpm dev
 
 访问 http://localhost:3000
 
-## 文档结构
+## 组件架构
 
-- **README.md** - 项目概述和快速开始
-- **project-plan.md** - 敏捷开发计划和冲刺安排
-- **task-execution-plan.md** - 详细任务执行计划和进度跟踪
-- **technical-guide.md** - 技术架构和实现指南
-- **troubleshooting.md** - 故障排除和性能优化指南
+```
+components/data-analysis/
+├── suggested-queries.tsx    # 建议查询按钮
+├── dynamic-chart.tsx       # 动态图表 (bar/line/area/pie)
+├── query-viewer.tsx        # SQL查询显示
+├── data-results.tsx        # Table/Chart切换结果
+└── index.ts               # 组件导出
+```
+
+## 参考项目
+
+- [AI Chatbot](https://demo.chat-sdk.dev/) - 聊天界面参考
+- [Natural Language Postgres](https://natural-language-postgres.vercel.app/) - 数据分析UX参考

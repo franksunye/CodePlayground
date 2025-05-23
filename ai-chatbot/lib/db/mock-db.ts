@@ -4,6 +4,8 @@ import { ChatSDKError } from '../errors';
 import type { User, Chat, DBMessage } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import type { VisibilityType } from '@/components/visibility-selector';
+import fs from 'fs';
+import path from 'path';
 
 // In-memory storage
 const users: Record<string, User> = {};
@@ -374,8 +376,14 @@ export async function saveDocument({
       createdAt: new Date(),
     };
     documents[id] = document;
+
+    // Persist to file
+    saveDocumentsToFile(documents);
+
+    console.log('📄 Document saved:', { id, title, contentLength: content?.length || 0, kind });
     return document;
   } catch (error) {
+    console.error('❌ Failed to save document:', error);
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to save document',
@@ -383,8 +391,146 @@ export async function saveDocument({
   }
 }
 
-// Add storage for streams and documents
-const streams: Record<string, string[]> = {};
-const documents: Record<string, any> = {};
+// File-based persistence for development
+const DATA_DIR = path.join(process.cwd(), '.mock-db');
+const DOCUMENTS_FILE = path.join(DATA_DIR, 'documents.json');
+const VOTES_FILE = path.join(DATA_DIR, 'votes.json');
+const STREAMS_FILE = path.join(DATA_DIR, 'streams.json');
 
-// Add other mock functions as needed
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Load data from files
+function loadDocuments(): Record<string, any> {
+  try {
+    if (fs.existsSync(DOCUMENTS_FILE)) {
+      const data = fs.readFileSync(DOCUMENTS_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.warn('Failed to load documents from file:', error);
+  }
+  return {};
+}
+
+function saveDocumentsToFile(docs: Record<string, any>) {
+  try {
+    fs.writeFileSync(DOCUMENTS_FILE, JSON.stringify(docs, null, 2));
+  } catch (error) {
+    console.warn('Failed to save documents to file:', error);
+  }
+}
+
+function loadVotes(): Record<string, any[]> {
+  try {
+    if (fs.existsSync(VOTES_FILE)) {
+      const data = fs.readFileSync(VOTES_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.warn('Failed to load votes from file:', error);
+  }
+  return {};
+}
+
+function saveVotesToFile(votesData: Record<string, any[]>) {
+  try {
+    fs.writeFileSync(VOTES_FILE, JSON.stringify(votesData, null, 2));
+  } catch (error) {
+    console.warn('Failed to save votes to file:', error);
+  }
+}
+
+// Add storage for streams, documents, and votes
+const streams: Record<string, string[]> = {};
+const documents: Record<string, any> = loadDocuments();
+const votes: Record<string, any[]> = loadVotes(); // chatId -> votes array
+
+// Vote-related functions
+export async function voteMessage({
+  chatId,
+  messageId,
+  type,
+}: {
+  chatId: string;
+  messageId: string;
+  type: 'up' | 'down';
+}) {
+  try {
+    if (!votes[chatId]) {
+      votes[chatId] = [];
+    }
+
+    // Find existing vote
+    const existingVoteIndex = votes[chatId].findIndex(
+      vote => vote.messageId === messageId
+    );
+
+    const voteData = {
+      chatId,
+      messageId,
+      isUpvoted: type === 'up',
+    };
+
+    if (existingVoteIndex >= 0) {
+      // Update existing vote
+      votes[chatId][existingVoteIndex] = voteData;
+    } else {
+      // Create new vote
+      votes[chatId].push(voteData);
+    }
+
+    return voteData;
+  } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to vote message');
+  }
+}
+
+export async function getVotesByChatId({ id }: { id: string }) {
+  try {
+    return votes[id] || [];
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get votes by chat id',
+    );
+  }
+}
+
+export async function getDocumentsById({ id }: { id: string }) {
+  try {
+    const doc = documents[id];
+    console.log('🔍 Getting document by id:', { id, found: !!doc, availableIds: Object.keys(documents) });
+    return doc ? [doc] : [];
+  } catch (error) {
+    console.error('❌ Failed to get documents by id:', error);
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get documents by id',
+    );
+  }
+}
+
+export async function deleteDocumentsByIdAfterTimestamp({
+  id,
+  timestamp,
+}: {
+  id: string;
+  timestamp: Date;
+}) {
+  try {
+    const doc = documents[id];
+    if (doc && doc.createdAt.getTime() > timestamp.getTime()) {
+      delete documents[id];
+      return { success: true };
+    }
+    return { success: false };
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to delete documents',
+    );
+  }
+}

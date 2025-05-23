@@ -70,13 +70,23 @@ ai-chatbot/
 │   ├── (chat)/           # 聊天相关页面
 │   └── layout.tsx        # 根布局
 ├── components/           # React组件
-│   ├── chat/             # 聊天相关组件
-│   ├── chart/            # 图表相关组件
-│   └── ui/               # UI组件
+│   ├── data-analysis/    # 数据分析组件 ✅ 已完成
+│   │   ├── suggested-queries.tsx    # 建议查询组件
+│   │   ├── dynamic-chart.tsx       # 动态图表组件
+│   │   ├── query-viewer.tsx        # SQL查询显示组件
+│   │   ├── data-results.tsx        # 数据结果组件
+│   │   └── index.ts               # 组件导出
+│   ├── ui/               # UI组件
+│   │   ├── chart.tsx     # 图表容器组件 ✅ 已添加
+│   │   ├── table.tsx     # 表格组件 ✅ 已添加
+│   │   ├── tabs.tsx      # 标签页组件 ✅ 已添加
+│   │   └── ...           # 其他UI组件
+│   └── ...               # 其他组件
 ├── lib/                  # 工具函数和服务
-│   ├── intent-recognition.ts  # 意图识别
-│   ├── mock-data.ts      # 模拟数据
-│   ├── chart-service.ts  # 图表服务
+│   ├── data-analysis/    # 数据分析服务 🚧 开发中
+│   │   ├── mock-data.ts      # 模拟数据服务
+│   │   ├── intent-recognition.ts  # 意图识别
+│   │   └── sql-generator.ts  # SQL生成服务
 │   └── types.ts          # 类型定义
 └── public/               # 静态资源
 ```
@@ -105,7 +115,7 @@ ai-chatbot/
 export async function POST(request: Request) {
   // 意图识别
   const intent = recognizeIntent(message);
-  
+
   if (intent.type === 'data_analysis') {
     // 生成图表响应
     const chartData = generateChartData(intent);
@@ -117,36 +127,45 @@ export async function POST(request: Request) {
 }
 ```
 
-### 2. 图表消息组件
+### 2. 数据分析组件
 ```typescript
-// components/chat/chart-message.tsx
-export function ChartMessage({ data, type }) {
+// components/data-analysis/data-results.tsx
+export function DataAnalysisResults({ results, columns, chartConfig }) {
   return (
-    <div className="chart-container">
-      <DynamicChart data={data} type={type} />
-      <ChartTypeSelector onTypeChange={handleTypeChange} />
-    </div>
+    <Tabs defaultValue="table">
+      <TabsList>
+        <TabsTrigger value="table">Table</TabsTrigger>
+        <TabsTrigger value="charts">Chart</TabsTrigger>
+      </TabsList>
+      <TabsContent value="table">
+        <Table>...</Table>
+      </TabsContent>
+      <TabsContent value="charts">
+        <DynamicChart chartData={results} chartConfig={chartConfig} />
+      </TabsContent>
+    </Tabs>
   );
 }
 ```
 
 ### 3. 意图识别
 ```typescript
-// lib/intent-recognition.ts
+// lib/data-analysis/intent-recognition.ts
 export function recognizeIntent(message: string) {
   const patterns = {
-    sales_trend: /销售.*趋势|sales.*trend/i,
-    user_analysis: /用户.*分析|user.*analysis/i,
-    product_comparison: /产品.*比较|product.*comparison/i
+    unicorn_density: /countries.*highest.*density|密度最高的国家/i,
+    unicorn_count: /count.*unicorns|独角兽.*数量/i,
+    valuation_comparison: /compare.*valuation|估值.*比较/i,
+    funding_analysis: /funding.*amounts|融资.*金额/i
   };
-  
+
   for (const [type, pattern] of Object.entries(patterns)) {
     if (pattern.test(message)) {
-      return { type, confidence: 0.8 };
+      return { type, confidence: 0.8, query: message };
     }
   }
-  
-  return { type: 'general', confidence: 0.5 };
+
+  return { type: 'general', confidence: 0.5, query: message };
 }
 ```
 

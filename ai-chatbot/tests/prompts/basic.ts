@@ -37,7 +37,16 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
     content: [
       {
         type: 'text',
-        text: 'Help me write an essay about Silicon Valley',
+        text: 'Help me write an essay about silicon valley',
+      },
+    ],
+  },
+  USER_CODE_ARTIFACT: {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: 'Write code to demonstrate djikstra\'s algorithm',
       },
     ],
   },
@@ -46,7 +55,7 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
     content: [
       {
         type: 'text',
-        text: 'Essay about Silicon Valley',
+        text: 'Help me write an essay about silicon valley',
       },
     ],
   },
@@ -59,9 +68,34 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
         toolName: 'createDocument',
         result: {
           id: '3ca386a4-40c6-4630-8ed1-84cbd46cc7eb',
-          title: 'Essay about Silicon Valley',
+          title: 'Help me write an essay about silicon valley',
           kind: 'text',
           content: 'A document was created and is now visible to the user.',
+        },
+      },
+    ],
+  },
+  CREATE_DOCUMENT_CODE_CALL: {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: 'Write code to demonstrate djikstra\'s algorithm',
+      },
+    ],
+  },
+  CREATE_DOCUMENT_CODE_RESULT: {
+    role: 'tool',
+    content: [
+      {
+        type: 'tool-result',
+        toolCallId: 'call_124',
+        toolName: 'createDocument',
+        result: {
+          id: '4da386a4-40c6-4630-8ed1-84cbd46cc7eb',
+          title: 'Write code to demonstrate djikstra\'s algorithm',
+          kind: 'code',
+          content: 'A code document was created and is now visible to the user.',
         },
       },
     ],
@@ -134,6 +168,108 @@ export const TEST_PROMPTS: Record<string, CoreMessage> = {
               '2025-03-16T19:17',
             ],
           },
+        },
+      },
+    ],
+  },
+  USER_DATA_ANALYSIS: {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: 'Compare unicorn valuations in the US vs China',
+      },
+    ],
+  },
+  CREATE_DATA_ANALYSIS_CALL: {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: 'Compare unicorn valuations in the US vs China',
+      },
+    ],
+  },
+  CREATE_DATA_ANALYSIS_RESULT: {
+    role: 'tool',
+    content: [
+      {
+        type: 'tool-result',
+        toolCallId: 'call_789',
+        toolName: 'createDataAnalysis',
+        result: {
+          id: 'data-1234567890',
+          title: 'Compare unicorn valuations in the US vs China',
+          kind: 'data',
+          message: 'Data analysis has been created with interactive charts and tables.',
+        },
+      },
+    ],
+  },
+  USER_UNICORN_DENSITY: {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: 'Which countries have the highest unicorn density?',
+      },
+    ],
+  },
+  CREATE_UNICORN_DENSITY_CALL: {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: 'Which countries have the highest unicorn density?',
+      },
+    ],
+  },
+  CREATE_UNICORN_DENSITY_RESULT: {
+    role: 'tool',
+    content: [
+      {
+        type: 'tool-result',
+        toolCallId: 'call_890',
+        toolName: 'createDataAnalysis',
+        result: {
+          id: 'data-density-123',
+          title: 'Which countries have the highest unicorn density?',
+          kind: 'data',
+          message: 'Data analysis has been created with interactive charts and tables.',
+        },
+      },
+    ],
+  },
+  USER_TOP_COUNTRIES: {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: 'Show me the top countries with most unicorn companies',
+      },
+    ],
+  },
+  CREATE_TOP_COUNTRIES_CALL: {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: 'Show me the top countries with most unicorn companies',
+      },
+    ],
+  },
+  CREATE_TOP_COUNTRIES_RESULT: {
+    role: 'tool',
+    content: [
+      {
+        type: 'tool-result',
+        toolCallId: 'call_891',
+        toolName: 'createDataAnalysis',
+        result: {
+          id: 'data-countries-456',
+          title: 'Show me the top countries with most unicorn companies',
+          kind: 'data',
+          message: 'Data analysis has been created with interactive charts and tables.',
         },
       },
     ],

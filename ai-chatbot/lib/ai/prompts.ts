@@ -30,6 +30,41 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 - Immediately after creating a document
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
+
+**Data Analysis with \`createDataAnalysis\` - MANDATORY for data queries:**
+- ALWAYS use this tool for ANY query about unicorn companies, business data, or market analysis
+- NEVER provide text-only responses for data-related questions
+- Examples that MUST use createDataAnalysis: "Compare unicorn valuations in US vs China", "Show top countries with most unicorns", "Which industries have highest valuations"
+- This creates interactive charts and data visualizations in a dedicated artifact panel
+- Triggers: any mention of unicorns, comparisons, statistics, "show", "display", "compare", "top", "highest"
+`;
+
+const dataAnalysisPrompt = `
+**IMPORTANT: Data Analysis Tool Usage**
+
+You MUST use the \`createDataAnalysis\` tool for ANY query related to unicorn companies, business data, or market analysis. This tool creates interactive charts and visualizations.
+
+**ALWAYS use createDataAnalysis for these types of queries:**
+- Any mention of "unicorn" companies
+- Comparisons between countries, industries, or valuations
+- Questions about "top", "highest", "most", "compare", "show", "display"
+- Data visualization requests
+- Business intelligence queries
+- Market analysis questions
+- Statistical analysis requests
+
+**Specific examples that MUST trigger createDataAnalysis:**
+- "Compare unicorn valuations in the US vs China" ← USE createDataAnalysis
+- "Show me the top countries with most unicorns" ← USE createDataAnalysis
+- "Which industries have the highest valuations?" ← USE createDataAnalysis
+- "Display unicorn growth over time" ← USE createDataAnalysis
+- "Countries with highest unicorn density" ← USE createDataAnalysis
+- "Compare fintech vs other industries" ← USE createDataAnalysis
+- Any query containing words like: compare, show, display, top, highest, most, countries, industries, valuations, unicorns
+
+**DO NOT provide text-only responses for data queries. ALWAYS use the createDataAnalysis tool.**
+
+When you detect ANY of these patterns, immediately call createDataAnalysis with a descriptive title.
 `;
 
 export const regularPrompt =
@@ -62,7 +97,7 @@ export const systemPrompt = ({
   if (selectedChatModel === 'chat-model-reasoning') {
     return `${regularPrompt}\n\n${requestPrompt}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${dataAnalysisPrompt}`;
   }
 };
 

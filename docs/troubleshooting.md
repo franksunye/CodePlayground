@@ -115,7 +115,7 @@ function getStreamContext() {
 **文件**: `app/(chat)/api/chat/route.ts`
 ```typescript
 // 在mock模式下使用模拟地理位置数据
-const geoData = isMockMode 
+const geoData = isMockMode
   ? { longitude: null, latitude: null, city: null, country: null }
   : geolocation(request);
 ```
@@ -180,8 +180,65 @@ API路由中的错误处理必须覆盖所有可能的代码路径，确保每�
 ### 4. 构建缓存的影响
 在进行大量代码修改后，清理构建缓存可以避免一些奇怪的编译问题。
 
+## 数据分析组件相关问题
+
+### 图表渲染问题
+
+**问题**：Recharts图表不显示或显示异常
+```
+Warning: Failed to create chart
+```
+
+**解决方案**：
+1. 确保数据格式正确
+```typescript
+// 正确的数据格式
+const chartData = [
+  { country: 'United States', unicorn_count: 673 },
+  { country: 'China', unicorn_count: 164 }
+];
+```
+
+2. 检查ChartConfig配置
+```typescript
+const chartConfig = {
+  type: 'bar' as const,
+  xKey: 'country',
+  yKeys: ['unicorn_count'],
+  title: 'Chart Title'
+};
+```
+
+### 组件导入错误
+
+**问题**：数据分析组件导入失败
+```
+Module not found: Can't resolve '@/components/data-analysis'
+```
+
+**解决方案**：确保组件路径正确
+```typescript
+// 正确的导入方式
+import { DataAnalysisSuggestedQueries } from '@/components/data-analysis';
+// 或
+import { DataAnalysisSuggestedQueries } from '@/components/data-analysis/suggested-queries';
+```
+
+### 依赖缺失问题
+
+**问题**：缺少recharts或相关依赖
+```
+Module not found: Can't resolve 'recharts'
+```
+
+**解决方案**：安装必要依赖
+```bash
+pnpm add recharts @radix-ui/react-tabs
+```
+
 ## 后续优化方向
 
-1. **懒加载组件**：对非关键组件实现懒加载
-2. **缓存优化**：实现本地缓存机制
-3. **代码分割**：按功能模块分割代码
+1. **懒加载组件**：对图表组件实现懒加载
+2. **缓存优化**：实现数据查询结果缓存
+3. **代码分割**：按功能模块分割数据分析代码
+4. **图表性能优化**：大数据集的图表渲染优化
